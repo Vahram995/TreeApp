@@ -11,12 +11,13 @@ namespace TreeApplication.Middlewares
     {
         private readonly RequestDelegate _next;
         private readonly ILogger _logger;
-        private readonly IExceptionJournalRepository _exceptionJournalRepository;
+        private readonly IServiceProvider _serviceProvider;
 
-        public ExceptionMiddleware(RequestDelegate next, ILogger logger)
+        public ExceptionMiddleware(RequestDelegate next, ILogger logger, IServiceProvider serviceProvider)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _serviceProvider = serviceProvider;
         }
 
         public async Task Invoke(HttpContext context)
@@ -71,9 +72,11 @@ namespace TreeApplication.Middlewares
                 StackTrace = secEx?.StackTrace ?? ex.StackTrace
             };
 
-            await _exceptionJournalRepository.AddAsync(exception);
-            await _exceptionJournalRepository.SaveChangesAsync();
+            using var scope = _serviceProvider.CreateScope();
+            var exceptionJournalRepository = scope.ServiceProvider.GetService<IExceptionJournalRepository>();
 
+            await exceptionJournalRepository.AddAsync(exception);
+            await exceptionJournalRepository.SaveChangesAsync();
 
             var errorModel = new ErrorModel
             {
