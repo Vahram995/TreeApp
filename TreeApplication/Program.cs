@@ -1,6 +1,9 @@
+using Microsoft.EntityFrameworkCore;
+using TreeApplication.DAL;
 using TreeApplication.DAL.Extensions;
 using TreeApplication.Extensions;
 using TreeApplication.Middlewares;
+using AppContext = TreeApplication.DAL.AppContext;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,9 +22,16 @@ builder.Services.AddServices();
 
 builder.Services.AddSwaggerGen();
 
+
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppContext>(); // Your DbContext
+    dbContext.Database.Migrate(); // Apply any pending migrations
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsProduction())
