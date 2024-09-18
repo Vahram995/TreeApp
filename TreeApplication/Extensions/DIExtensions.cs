@@ -22,6 +22,8 @@ namespace TreeApplication.Extensions
             .WriteTo.Console()
             .CreateLogger();
 
+            services.AddSingleton(Log.Logger);
+
             return services;
         }
     }
