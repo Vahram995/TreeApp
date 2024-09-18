@@ -22,15 +22,14 @@ builder.Services.AddServices();
 
 builder.Services.AddSwaggerGen();
 
-
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
 
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppContext>(); // Your DbContext
-    dbContext.Database.Migrate(); // Apply any pending migrations
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppContext>();
+    dbContext.Database.Migrate();
 }
 
 // Configure the HTTP request pipeline.
